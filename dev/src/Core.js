@@ -21,11 +21,11 @@
          * @param {Number} height 画面の高さ.
          [/lang]
          [lang:en]
-         * A class which is controlling the cores main loop and scenes.
+         * The Core controls the main game loop and scenes.
          *
-         * There can be only one instance at a time, when the constructor is executed
-         * with an instance present, the existing instance will be overwritten. The existing instance
-         * can be accessed from {@link enchant.Core.instance}.
+         * There can be only one Core instance at a time. If the constructure is called while
+         * another instance is running, the running instance will be overwritten with a new one.
+         * The current instance can be found at {@link enchant.Core.instance}.
          *
          * @param {Number} width The width of the core screen.
          * @param {Number} height The height of the core screen.
@@ -136,7 +136,7 @@
              * アプリの開始からのフレーム数.
              [/lang]
              [lang:en]
-             * The amount of frames since the core was started.
+             * The number of frames since the core was started.
              [/lang]
              [lang:de]
              * Anzahl der Frames seit dem Spielestart.
@@ -162,7 +162,7 @@
              * アプリが実行状態かどうか.
              [/lang]
              [lang:en]
-             * Indicates if the core is currently executed.
+             * Indicates if the core is currently running.
              [/lang]
              [lang:de]
              * Zeigt an ob das Spiel derzeit ausgeführt wird.
@@ -175,7 +175,7 @@
              * ロードされた画像をパスをキーとして保存するオブジェクト.
              [/lang]
              [lang:en]
-             * Object which stores loaded objects with the path as key.
+             * Object storing loaded assets (images, sound, etc.) with their path as key.
              [/lang]
              [lang:de]
              * Geladene Objekte werden unter dem Pfad als Schlüssel in diesem Objekt abgelegt.
@@ -231,7 +231,7 @@
              * ローディング時に表示されるScene.
              [/lang]
              [lang:en]
-             * The Scene which is getting displayed during loading.
+             * Scene to display during loading.
              [/lang]
              [lang:de]
              * Die Szene, welche während des Ladevorgangs dargestellt wird.
@@ -243,6 +243,9 @@
             /**
              [lang:ja]
              * 一度でも game.start() が呼ばれたことがあるかどうか。
+             [/lang]
+             [lang:en]
+             * Whether game.start() has been called or not.
              [/lang]
              * @type {Boolean}
              * @private
@@ -257,7 +260,7 @@
              * アプリに対する入力状態を保存するオブジェクト.
              [/lang]
              [lang:en]
-             * Object that saves the current input state for the core.
+             * The state of all inputs (keys) to the core.
              [/lang]
              [lang:de]
              * Objekt, welches den aktuellen Eingabestatus des Spieles speichert.
@@ -539,20 +542,23 @@
          *   };
          *   core.start();
          *
-         * @param {...String} assets プリロードする画像のパス. 複数指定できる.
+         * @param {...String} assets プリロードするファイルのパス. 複数指定できる.
          [/lang]
          [lang:en]
-         * Performs a file preload.
+         * Preload a file.
          *
-         * Sets files which are to be preloaded. When {@link enchant.Core#start} is called the
-         * actual loading takes place. When all files are loaded, a {@link enchant.Event.LOAD} event
-         * is dispatched from the Core object. Depending on the type of the file different objects will be
-         * created and stored in {@link enchant.Core#assets} Variable.
-         * When an image file is loaded, an {@link enchant.Surface} is created. If a sound file is loaded, an
-         * {@link enchant.Sound} object is created. Otherwise it will be accessible as a string.
+         * Takes a list of files to preload; loading begins when {@link enchant.Core#start} 
+         * is called. Loaded files are saved in {@link enchant.Core#assets}. The type of object
+         * created depends on the type of file:
          *
-         * In addition, because this Surface object used made with {@link enchant.Surface.load},
-         * direct object manipulation is not possible. Refer to the items of {@link enchant.Surface.load}
+         *   - Images are saved as {@link enchant.Surface}
+         *   - Sound files are saved as {@link enchant.Sound}
+         *   - Anything else is just saved as a String.
+         *
+         * When all files have finished loading the Core fires an [@link enchant.Event.LOAD} event.
+         *
+         * Note that Surfaces loaded this way can't be manipulated directly. See 
+         * {@link enchant.Surface.load}.
          *
          * @example
          *   core.preload('player.gif');
@@ -563,7 +569,7 @@
          *   };
          *   core.start();
          *
-         * @param {...String} assets Path of images to be preloaded. Multiple settings possible.
+         * @param {...String} assets Path of files to be preloaded. Multiple settings possible.
          [/lang]
          [lang:de]
          * Lässt Dateien im voraus laden.
@@ -624,10 +630,10 @@
          [lang:en]
          * Loads a file.
          *
-         * @param {String} asset File path of the resource to be loaded.
-         * @param {String} asset name of the resource to be loaded.
-         * @param {Function} [callback] Function called up when file loading is finished.
-         * @param {Function} [callback] Function called up when file loading is failed.
+         * @param {String} asset Path of the file to be loaded.
+         * @param {String} [alias] Alias for the file (if you don't want to use the filename).
+         * @param {Function} [callback] Function to call when loading finishes.
+         * @param {Function} [onerror] Error handler.
          [/lang]
          [lang:de]
          * Laden von Dateien.
@@ -701,9 +707,8 @@
          [lang:en]
          * Start the core.
          *
-         * Obeying the frame rate set in {@link enchant.Core#fps}, the frame in
-         * {@link enchant.Core#currentScene} will be updated. If images to preload are present,
-         * loading will begin and the loading screen will be displayed.
+         * Start the engine running at the framerate specified by {@link enchant.Core#fps}.
+         * If there are any files to preload, show the loading screen and begin loading them.
          [/lang]
          [lang:de]
          * Starte das Spiel
@@ -807,10 +812,9 @@
          * enchant.Core.instance._debug フラグを true にすることでもデバッグモードをオンにすることができる
          [/lang]
          [lang:en]
-         * Begin core debug mode.
+         * Start Core in debug mode.
          *
-         * Core debug mode can be set to on even if enchant.Core.instance._debug
-         * flag is already set to true.
+         * You can also turn debug mode on by directly setting enchant.Core.instance._debug to true.
          [/lang]
          [lang:de]
          * Startet den Debug-Modus des Spieles.
@@ -899,10 +903,9 @@
          * enchant.Core#startで再開できる.
          [/lang]
          [lang:en]
-         * Stops the core.
+         * Stop the Core.
          *
-         * The frame will not be updated, and player input will not be accepted anymore.
-         * Core can be restarted using {@link enchant.Core#start}.
+         * Frame and input updates will stop. Restart the Core by calling {@link enchant.Core#start}.
          [/lang]
          [lang:de]
          * Stoppt das Spiel.
@@ -924,16 +927,16 @@
          * enchant.Core#startで再開できる.
          [/lang]
          [lang:en]
-         * Stops the core.
+         * Pause the Core.
          *
-         * The frame will not be updated, and player input will not be accepted anymore.
-         * Core can be started again using {@link enchant.Core#start}.
+         * Frame and input updates will stop. Unpause the Core by calling {@link enchant.Core#resume}.
+         * Note calling {@link enchant.Core#start} will restart the Core from the beginning.
          [/lang]
          [lang:de]
          * Stoppt das Spiel.
          *
          * Der Frame wird nicht mehr aktualisiert und Spielereingaben werden nicht
-         * mehr akzeptiert. Das spiel kann mit der {@link enchant.Core#start} Methode
+         * mehr akzeptiert. Das spiel kann mit der {@link enchant.Core#resume} Methode
          * erneut gestartet werden.
          [/lang]
          */
@@ -975,9 +978,9 @@
          [lang:en]
          * Switch to a new Scene.
          *
-         * Scenes are controlled using a stack, and the display order also obeys that stack order.
-         * When {@link enchant.Core#pushScene} is executed, the Scene can be brought to the top of stack.
-         * Frames will be updated in the Scene which is on the top of the stack.
+         * Scenes are controlled using a stack. Scenes are rendered with the top of the stack on
+         * top visually, and the top of the stack is the current scene and thus the only one to get
+         * frame updates. {@link enchant.Core#pushScene} puts a scene on top of the stack.
          *
          * @param {enchant.Scene} scene The new scene to be switched to.
          * @return {enchant.Scene} The new Scene.
@@ -1055,8 +1058,8 @@
          [lang:en]
          * Overwrites the current Scene with a new Scene.
          *
-         * {@link enchant.Core#popScene}, {@link enchant.Core#pushScene} are executed after
-         * each other to replace to current scene with the new scene.
+         * Call {@link enchant.Core#popScene} then {@link enchant.Core#pushScene} replace
+         * the current scene with the provided one.
          *
          * @param {enchant.Scene} scene The new scene which will replace the previous scene.
          * @return {enchant.Scene} The new Scene.
@@ -1087,7 +1090,7 @@
          [lang:en]
          * Removes a Scene.
          *
-         * Removes a Scene from the Scene stack.
+         * Remove a Scene from the Scene stack.
          *
          * @param {enchant.Scene} scene Scene to be removed.
          * @return {enchant.Scene} The deleted Scene.
@@ -1123,10 +1126,10 @@
          * @param {String} button 割り当てるボタン.
          [/lang]
          [lang:en]
-         * Set a key binding.
+         * Set a keybinding.
          *
-         * @param {Number} key Key code for the button which will be bound.
-         * @param {String} button The enchant.js button (left, right, up, down, a, b).
+         * @param {Number} key Key code for the button to bind.
+         * @param {String} button The enchant.js button name (left, right, up, down, a, b).
          [/lang]
          [lang:de]
          * Bindet eine Taste.
@@ -1172,9 +1175,9 @@
          * @param {Number} key 削除するキーコード.
          [/lang]
          [lang:en]
-         * Delete a key binding.
+         * Delete a keybinding.
          *
-         * @param {Number} key Key code that want to delete.
+         * @param {Number} key Key code of the keybinding to be deleted.
          [/lang]
          [lang:de]
          * Entbindet eine Taste.
@@ -1206,8 +1209,8 @@
          * @return {Number} 経過した時間 (秒)
          [/lang]
          [lang:en]
-         * Get the elapsed core time (not actual) from when core.start was called.
-         * @return {Number} The elapsed time (seconds)
+         * Get the elapsed core time (not actual) since core.start was called.
+         * @return {Number} The elapsed time in seconds
          [/lang]
          [lang:de]
          * Liefert die vergange Spielzeit (keine reale) die seit dem Aufruf von core.start
@@ -1270,7 +1273,7 @@
      * 現在のCoreインスタンス.
      [/lang]
      [lang:en]
-     * The Current Core instance.
+     * The current Core instance.
      [/lang]
      [lang:de]
      * Die aktuelle Instanz des Spieles.
